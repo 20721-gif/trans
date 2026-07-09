@@ -1,0 +1,60 @@
+import streamlit as st
+from PIL import Image, ImageEnhance, ImageFilter
+
+# 페이지 설정
+st.set_page_config(page_title="디자인 도구: 이미지 편집기", page_icon="🎨", layout="wide")
+
+st.title("🎨 디자인 도구: 간단한 이미지 편집기")
+st.write("이미지를 업로드하고 사이드바에서 밝기, 대비를 조절하거나 필터를 적용해 느낌을 확인해 보세요.")
+
+# 사이드바 설정
+st.sidebar.header("디자인 설정 (Control Panel)")
+
+# 1. 파일 업로드 창
+uploaded_file = st.sidebar.file_uploader("이미지 파일 업로드 (JPG, PNG)", type=['jpg', 'png', 'jpeg'])
+
+if uploaded_file is not None:
+    # 이미지 열기
+    image = Image.open(uploaded_file)
+    edited_image = image.copy()
+    
+    # 2. 밝기(Brightness) 조절
+    brightness = st.sidebar.slider("밝기 (Brightness)", 0.0, 3.0, 1.0, step=0.1)
+    if brightness != 1.0:
+        enhancer = ImageEnhance.Brightness(edited_image)
+        edited_image = enhancer.enhance(brightness)
+    
+    # 3. 대비(Contrast) 조절
+    contrast = st.sidebar.slider("대비 (Contrast)", 0.0, 3.0, 1.0, step=0.1)
+    if contrast != 1.0:
+        enhancer = ImageEnhance.Contrast(edited_image)
+        edited_image = enhancer.enhance(contrast)
+    
+    # 4. 필터(Filter) 적용
+    filter_option = st.sidebar.selectbox(
+        "필터 적용", 
+        ["원본", "흑백 (Grayscale)", "블러 (Blur)", "윤곽선 (Contour)", "디테일 강화 (Detail)"]
+    )
+    
+    if filter_option == "흑백 (Grayscale)":
+        edited_image = edited_image.convert("L")
+    elif filter_option == "블러 (Blur)":
+        edited_image = edited_image.filter(ImageFilter.BLUR)
+    elif filter_option == "윤곽선 (Contour)":
+        edited_image = edited_image.filter(ImageFilter.CONTOUR)
+    elif filter_option == "디테일 강화 (Detail)":
+        edited_image = edited_image.filter(ImageFilter.DETAIL)
+        
+    # 결과 화면 출력 (화면을 반으로 나누어 원본과 비교)
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.subheader("🖼️ 원본 이미지")
+        st.image(image, use_container_width=True)
+        
+    with col2:
+        st.subheader("✨ 편집된 이미지")
+        st.image(edited_image, use_container_width=True)
+
+else:
+    st.info("왼쪽 사이드바에서 이미지를 먼저 업로드해 주세요.")
